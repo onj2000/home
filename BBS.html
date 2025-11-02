@@ -1,0 +1,297 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>シンプルBBS (ローカルモード)</title>
+    <!-- Tailwind CSSを読み込み -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- フォント設定 -->
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f4f7f9;
+        }
+        /* スクロールバーのスタイルを非表示にする (見た目をシンプルに保つため) */
+        .post-list::-webkit-scrollbar {
+            display: none;
+        }
+        .post-list {
+            -ms-overflow-style: none;  /* IE and Edge */
+            scrollbar-width: none;  /* Firefox */
+        }
+    </style>
+</head>
+<body>
+
+    <!-- メインコンテナ -->
+    <div id="app" class="min-h-screen flex flex-col items-center p-4">
+        
+        <!-- ヘッダー -->
+        <header class="w-full max-w-2xl text-center py-6">
+            <h1 class="text-4xl font-extrabold text-gray-800">シンプル掲示板 (ローカルモード)</h1>
+            <p class="text-sm text-red-600 font-semibold mt-1">
+                ※ このバージョンはデータをブラウザ内に保存します。**他のユーザーとは共有されません。**
+            </p>
+            <p id="user-info" class="text-sm text-gray-500 mt-2">
+                <!-- ユーザーIDとユーザー名がここに表示されます -->
+            </p>
+        </header>
+
+        <!-- 投稿フォーム -->
+        <div class="w-full max-w-2xl bg-white shadow-lg rounded-xl p-6 mb-6">
+            <form id="post-form">
+                <!-- ユーザー名入力フィールドをここに追加 -->
+                <input type="text" id="username-input"
+                    placeholder="ユーザー名 (任意、最大20文字)"
+                    maxlength="20"
+                    class="w-full p-3 mb-4 border-2 border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500 transition duration-150"
+                    aria-label="ユーザー名"
+                >
+
+                <textarea id="post-content"
+                    placeholder="ここにメッセージを入力してください..."
+                    rows="4"
+                    maxlength="500"
+                    required
+                    class="w-full p-3 border-2 border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500 transition duration-150 resize-none"
+                    aria-label="投稿内容"
+                ></textarea>
+                <div class="flex justify-end mt-4">
+                    <button type="submit"
+                        id="submit-button"
+                        class="px-6 py-2 bg-blue-600 text-white font-semibold rounded-full shadow-md hover:bg-blue-700 transition duration-150 transform hover:scale-105 disabled:bg-gray-400"
+                    >
+                        投稿
+                    </button>
+                </div>
+            </form>
+        </div>
+
+        <!-- 投稿リスト -->
+        <div id="posts-container" class="w-full max-w-2xl flex flex-col gap-4 post-list">
+            <!-- 投稿はここに動的に挿入されます -->
+            <div id="loading-indicator" class="text-center p-8 text-gray-500">
+                <p class="mt-2">ローカルデータを読み込み中...</p>
+            </div>
+        </div>
+
+        <!-- エラーメッセージ表示エリア -->
+        <div id="error-message" class="fixed bottom-4 left-1/2 transform -translate-x-1/2 p-3 bg-red-500 text-white rounded-lg shadow-xl hidden">
+            <!-- エラーメッセージがここに表示されます -->
+        </div>
+
+    </div>
+
+    <!-- ローカルストレージを利用したJavaScriptロジック -->
+    <script type="module">
+        // ------------------ 初期設定と変数 ------------------
+        let userId = null;
+        let userName = "匿名ユーザー"; // グローバルな現在のユーザー名
+
+        const postsContainer = document.getElementById('posts-container');
+        const postForm = document.getElementById('post-form');
+        const postContentInput = document.getElementById('post-content');
+        const usernameInput = document.getElementById('username-input'); // ユーザー名入力フィールド
+        const submitButton = document.getElementById('submit-button');
+        const userInfoElement = document.getElementById('user-info');
+        const loadingIndicator = document.getElementById('loading-indicator');
+        const errorMessageElement = document.getElementById('error-message');
+        
+        const LOCAL_STORAGE_KEY = 'local_bbs_posts';
+        const USER_ID_KEY = 'local_user_id';
+        const USERNAME_KEY = 'local_username'; // ユーザー名保存用のキー
+
+        /**
+         * エラーメッセージをユーザーに表示します。
+         * @param {string} message - 表示するエラーテキスト
+         */
+        function showErrorMessage(message) {
+            errorMessageElement.textContent = `エラー: ${message}`;
+            errorMessageElement.classList.remove('hidden');
+            setTimeout(() => {
+                errorMessageElement.classList.add('hidden');
+            }, 5000);
+        }
+        
+        /**
+         * ユーザーIDとユーザー名をローカルストレージから取得または新規生成します。
+         */
+        function setupUser() {
+            // 1. ユーザーIDの処理
+            let storedUserId = localStorage.getItem(USER_ID_KEY);
+            if (!storedUserId) {
+                // 新しいユニークなIDを生成し、保存
+                storedUserId = crypto.randomUUID();
+                localStorage.setItem(USER_ID_KEY, storedUserId);
+            }
+            userId = storedUserId;
+
+            // 2. ユーザー名の処理
+            let storedUsername = localStorage.getItem(USERNAME_KEY);
+            
+            // ローカルに名前が保存されていない場合、デフォルト名を設定
+            if (!storedUsername) {
+                const hash = userId.substring(0, 4);
+                userName = `名無し-${hash}`;
+            } else {
+                userName = storedUsername;
+            }
+            
+            // フォーム入力欄に現在のユーザー名を設定
+            if (usernameInput) {
+                usernameInput.value = userName.startsWith('名無し-') ? '' : userName; // デフォルト名の場合は空欄にする
+            }
+
+            userInfoElement.textContent = `現在のユーザーID: ${userId} / 投稿名: ${userName}`;
+        }
+
+
+        /**
+         * タイムスタンプを読みやすい形式にフォーマットします。
+         * @param {number} timestamp - ミリ秒単位のタイムスタンプ (Date.now())
+         * @returns {string} フォーマットされた日付と時刻
+         */
+        function formatTimestamp(timestamp) {
+            if (!timestamp) return '不明な日時';
+            const date = new Date(timestamp);
+            return date.toLocaleString('ja-JP', {
+                year: 'numeric',
+                month: '2-digit',
+                day: '2-digit',
+                hour: '2-digit',
+                minute: '2-digit',
+                second: '2-digit'
+            });
+        }
+
+        /**
+         * ローカルストレージから投稿データを読み込み、HTML要素としてレンダリングします。
+         */
+        function loadPosts() {
+            postsContainer.innerHTML = '';
+            
+            try {
+                const storedPosts = localStorage.getItem(LOCAL_STORAGE_KEY);
+                let posts = storedPosts ? JSON.parse(storedPosts) : [];
+                
+                // タイムスタンプの降順でソート
+                posts.sort((a, b) => b.timestamp - a.timestamp);
+
+                if (posts.length === 0) {
+                    postsContainer.innerHTML = '<p class="text-center text-gray-500 p-8 bg-white rounded-xl shadow-lg">まだ投稿がありません。</p>';
+                    return;
+                }
+
+                posts.forEach(post => {
+                    const isMyPost = post.userId === userId;
+
+                    const postDiv = document.createElement('div');
+                    postDiv.className = `bg-white p-4 rounded-xl shadow-md border-l-4 ${isMyPost ? 'border-blue-500' : 'border-gray-300'}`;
+
+                    // ヘッダー (ユーザー名と日時)
+                    const header = document.createElement('div');
+                    header.className = 'flex justify-between items-center mb-2';
+                    
+                    const userSpan = document.createElement('span');
+                    userSpan.className = `font-bold text-lg ${isMyPost ? 'text-blue-700' : 'text-gray-800'}`;
+                    userSpan.textContent = post.username || '名無し'; // 投稿データ内の名前を使用
+
+                    const timeSpan = document.createElement('span');
+                    timeSpan.className = 'text-xs text-gray-500';
+                    timeSpan.textContent = formatTimestamp(post.timestamp);
+
+                    header.appendChild(userSpan);
+                    header.appendChild(timeSpan);
+                    postDiv.appendChild(header);
+
+                    // 内容
+                    const contentP = document.createElement('p');
+                    contentP.className = 'text-gray-700 whitespace-pre-wrap break-words';
+                    contentP.textContent = post.content;
+                    postDiv.appendChild(contentP);
+
+                    postsContainer.appendChild(postDiv);
+                });
+            } catch (error) {
+                console.error("ローカルストレージの読み込みエラー:", error);
+                showErrorMessage(`データの読み込み中にエラーが発生しました: ${error.message}`);
+            } finally {
+                loadingIndicator.style.display = 'none'; // 読み込み完了
+            }
+        }
+
+
+        /**
+         * フォーム送信時の処理: 新しい投稿をローカルストレージに追加します。
+         */
+        postForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+            
+            const content = postContentInput.value.trim();
+            // フォームから現在のユーザー名を取得し、処理する
+            let inputUsername = (usernameInput.value || '').trim();
+
+            // ユーザー名が空の場合の代替名を生成し、グローバル変数に設定
+            if (inputUsername.length === 0) {
+                const hash = userId.substring(0, 4);
+                inputUsername = `名無し-${hash}`;
+            }
+            
+            // ユーザー名が変更された場合はローカルストレージに保存し、グローバル変数も更新
+            if (inputUsername !== userName) {
+                userName = inputUsername;
+                localStorage.setItem(USERNAME_KEY, userName);
+                // ヘッダー表示を更新
+                userInfoElement.textContent = `現在のユーザーID: ${userId} / 投稿名: ${userName}`;
+            }
+
+
+            if (content.length === 0) {
+                showErrorMessage("内容を入力してください。");
+                return;
+            }
+
+            submitButton.disabled = true;
+            submitButton.textContent = "送信中...";
+
+            try {
+                // 投稿データオブジェクトを作成 (投稿時の確定したユーザー名を使用)
+                const newPost = {
+                    id: crypto.randomUUID(),
+                    userId: userId,
+                    username: userName, 
+                    content: content,
+                    timestamp: Date.now() // 現在のJSタイムスタンプ
+                };
+
+                // 既存のデータを取得し、新しい投稿を追加
+                const storedPosts = localStorage.getItem(LOCAL_STORAGE_KEY);
+                let posts = storedPosts ? JSON.parse(storedPosts) : [];
+                posts.push(newPost);
+
+                // ローカルストレージに保存
+                localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(posts));
+
+                // 投稿リストを更新
+                loadPosts();
+
+                // 成功したらフォームをクリア (ユーザー名は保持)
+                postContentInput.value = '';
+
+            } catch (error) {
+                console.error("投稿エラー:", error);
+                showErrorMessage(`投稿中にエラーが発生しました: ${error.message}`);
+            } finally {
+                submitButton.disabled = false;
+                submitButton.textContent = "投稿";
+            }
+        });
+
+        // アプリケーションの開始
+        setupUser();
+        loadPosts();
+
+    </script>
+</body>
+</html>
