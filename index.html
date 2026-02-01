@@ -2,170 +2,445 @@
 <html lang="ja">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>onj2000</title>
-    <!-- Tailwind CSS CDNをロードし、モバイルフレンドリーなスタイルを迅速に適用 -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Study Focus</title>
+    <!-- PWA settings -->
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <link rel="apple-touch-icon" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/svgs/solid/clock.svg">
+    
     <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <style>
-        /* カスタムスタイル: 背景とフォントの設定 */
-        body {
-            font-family: 'Inter', sans-serif;
-            background-color: #f7f9fb; /* わずかに青みがかったライトグレーの背景 */
+        @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600&family=JetBrains+Mono:wght@500&display=swap');
+        
+        :root {
+            --primary: #6366f1;
+            --bg: #fdfeff;
         }
-        /* スムーズスクロールを有効にする */
-        html {
-            scroll-behavior: smooth;
+
+        body {
+            font-family: 'Outfit', sans-serif;
+            background-color: var(--bg);
+            touch-action: manipulation;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        .timer-font {
+            font-family: 'JetBrains Mono', monospace;
+        }
+
+        .active-mode {
+            background-color: white;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+            color: var(--primary);
+        }
+
+        .mobile-card {
+            box-shadow: 0 10px 40px -10px rgba(0,0,0,0.05);
+        }
+
+        @keyframes ring {
+            0% { transform: rotate(0); }
+            25% { transform: rotate(15deg); }
+            50% { transform: rotate(-15deg); }
+            75% { transform: rotate(10deg); }
+            100% { transform: rotate(0); }
+        }
+
+        .is-ringing {
+            animation: ring 0.4s infinite;
+            color: #f59e0b !important;
+        }
+
+        .mute-active {
+            color: #ef4444 !important;
+        }
+
+        input:focus {
+            transform: scale(1.02);
+        }
+        input {
+            transition: transform 0.2s ease;
         }
     </style>
 </head>
-<body class="text-gray-800">
+<body class="min-h-screen flex flex-col items-center justify-between p-6">
 
-    <!-- ナビゲーションヘッダー (画面上部に固定) -->
-    <header class="sticky top-0 z-10 bg-white shadow-md">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3 flex justify-between items-center">
-            <!-- サイトタイトル -->
-            <a href="#" class="text-2xl font-extrabold text-indigo-600 tracking-tight">
-                onj2000
-            </a>
-            <!-- ナビゲーションリンク (モバイルでは折り返さないようシンプルな構成) -->
-            <nav class="space-x-4">
-                <a href="#services" class="text-gray-600 hover:text-indigo-600 transition duration-150 ease-in-out font-medium">サービス</a>
-                <a href="#about" class="text-gray-600 hover:text-indigo-600 transition duration-150 ease-in-out font-medium">開発者</a>
-            </nav>
-        </div>
-    </header>
-
-    <!-- ヒーローセクション -->
-    <section class="py-16 md:py-24 bg-indigo-50" id="hero">
-        <div class="max-w-3xl mx-auto text-center px-4 sm:px-6 lg:px-8">
-            <h1 class="text-4xl sm:text-5xl lg:text-6xl font-extrabold leading-tight text-gray-900 mb-4">
-                シンプルで使いやすい<span class="text-indigo-600">Webソリューション</span>
-            </h1>
-            <p class="text-xl text-gray-600 mb-8">
-                無料で便利なWEBアプリを作りました。ぜひご使用ください
-            </p>
-            <a href="#services" class="inline-flex items-center justify-center px-8 py-3 border border-transparent text-base font-medium rounded-full shadow-lg text-white bg-indigo-600 hover:bg-indigo-700 transition duration-200 transform hover:scale-105">
-                サービス一覧を見る
-            </a>
-        </div>
-    </section>
-
-    <!-- サービス/アプリ一覧セクション -->
-    <section class="py-16" id="services">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <h2 class="text-3xl font-bold text-center mb-12 text-gray-900">提供中のWebサービス</h2>
-
-            <!-- サービスカードコンテナ -->
-            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-
-                <!-- カード 1: アプリケーション -->
-                <div class="bg-white rounded-xl shadow-lg hover:shadow-xl transition duration-300 p-6 flex flex-col">
-                    <div class="text-indigo-500 mb-4">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.75 17L9 20l-1 1h8l-1-1v-3.25m-7.25 0h8.5m-8.5 0v-4.5h8.5v4.5m-4.25-10.75a4.25 4.25 0 100 8.5 4.25 4.25 0 000-8.5zm0 0a4.25 4.25 0 100 8.5 4.25 4.25 0 000-8.5zM21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                        </svg>
-                    </div>
-                    <h3 class="text-xl font-semibold mb-3 text-gray-900">画像動画判別アプリ (Web App)</h3>
-                    <p class="text-gray-600 mb-6 flex-grow">
-                        画像や動画がAIによってつくられたものかそうでないかを識別します。
-                    </p>
-                    <a href="https://onj2000.github.io/create334" target="_blank" rel="noopener noreferrer" class="text-center font-medium text-white bg-indigo-600 hover:bg-indigo-700 rounded-lg py-2 transition duration-200">
-                        アプリを利用する
-                    </a>
-                </div>
-
-                <!-- カード 2: 情報サイト -->
-                <div class="bg-white rounded-xl shadow-lg hover:shadow-xl transition duration-300 p-6 flex flex-col">
-                    <div class="text-green-500 mb-4">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M3 14h18m-9-4v8m-9 0h18" />
-                        </svg>
-                    </div>
-                    <h3 class="text-xl font-semibold mb-3 text-gray-900">ファクトチェッカー (Web App)</h3>
-                    <p class="text-gray-600 mb-6 flex-grow">
-                        SNSのコメントの内容が正しいのか、感情的か論理的かを識別します。
-                    </p>
-                    <a href="https://onj2000.github.io/factcheacker" target="_blank" rel="noopener noreferrer" class="text-center font-medium text-white bg-green-600 hover:bg-green-700 rounded-lg py-2 transition duration-200">
-                        ページを見る
-                    </a>
-                </div>
- <!-- カード３: アプリケーション -->
-                <div class="bg-white rounded-xl shadow-lg hover:shadow-xl transition duration-300 p-6 flex flex-col">
-                    <div class="text-indigo-500 mb-4">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.75 17L9 20l-1 1h8l-1-1v-3.25m-7.25 0h8.5m-8.5 0v-4.5h8.5v4.5m-4.25-10.75a4.25 4.25 0 100 8.5 4.25 4.25 0 000-8.5zm0 0a4.25 4.25 0 100 8.5 4.25 4.25 0 000-8.5zM21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                        </svg>
-                    </div>
-                    <h3 class="text-xl font-semibold mb-3 text-gray-900">あにまん過去ログ検索</h3>
-                    <p class="text-gray-600 mb-6 flex-grow">
-                        本文検索（全期間）も対応しております。
-                    </p>
-                    <a href="https://onj2000.github.io/create334/animan.html" target="_blank" rel="noopener noreferrer" class="text-center font-medium text-white bg-indigo-600 hover:bg-indigo-700 rounded-lg py-2 transition duration-200">
-                        アプリを利用する
-                    </a>
-                </div>
-
-
-            <!-- カード 2: 情報サイト -->
-                <div class="bg-white rounded-xl shadow-lg hover:shadow-xl transition duration-300 p-6 flex flex-col">
-                    <div class="text-green-500 mb-4">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M3 14h18m-9-4v8m-9 0h18" />
-                        </svg>
-                    </div>
-                    <h3 class="text-xl font-semibold mb-3 text-gray-900">炎上チェッカー (Web App)</h3>
-                    <p class="text-gray-600 mb-6 flex-grow">
-                        そのコメントが炎上のリスクがあるのか判定します。
-                    </p>
-                    <a href="https://onj2000.github.io/enzyocheack/" target="_blank" rel="noopener noreferrer" class="text-center font-medium text-white bg-green-600 hover:bg-green-700 rounded-lg py-2 transition duration-200">
-                        ページを見る
-                    </a>
-                </div>
-        </div>
-
-         <div class="bg-white rounded-xl shadow-lg hover:shadow-xl transition duration-300 p-6 flex flex-col">
-                    <div class="text-indigo-500 mb-4">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.75 17L9 20l-1 1h8l-1-1v-3.25m-7.25 0h8.5m-8.5 0v-4.5h8.5v4.5m-4.25-10.75a4.25 4.25 0 100 8.5 4.25 4.25 0 000-8.5zm0 0a4.25 4.25 0 100 8.5 4.25 4.25 0 000-8.5zM21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                        </svg>
-                    </div>
-                    <h3 class="text-xl font-semibold mb-3 text-gray-900">勉強タイマー</h3>
-                    <p class="text-gray-600 mb-6 flex-grow">
-                        シンプルなストップウオッチ、タイマー機能搭載。スプレッドシートと連携が可能で勉強記録を保存できます。
-                    </p>
-                    <a href="https://onj2000.github.io/study/" target="_blank" rel="noopener noreferrer" class="text-center font-medium text-white bg-indigo-600 hover:bg-indigo-700 rounded-lg py-2 transition duration-200">
-                        アプリを利用する
-                    </a>
-                </div>
-
-    </section>
-
-    <!-- 開発者情報セクション -->
-    <section class="py-16 bg-gray-100" id="about">
-        <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-            <h2 class="text-3xl font-bold mb-6 text-gray-900">開発者情報</h2>
-            <div class="bg-white rounded-xl shadow-lg p-8">
-                <p class="text-lg mb-4 text-gray-700">
-                    私は、シンプルさとユーザビリティを追求したWebアプリケーションを開発しています。
-                    ユーザーが「すぐに使える」と感じられるプロダクトづくりを目指しています。
-                </p>
-                
-                <h4 class="text-xl font-semibold mt-6 mb-3 text-gray-900">お問い合わせ</h4>
-                <p class="text-indigo-600 font-medium">
-                    <a href="mailto:etsrtouou2@gmail.com" class="hover:underline">こちらから</a>
-                </p>
+    <div class="w-full max-w-sm flex-1 flex flex-col justify-center space-y-8">
+        <!-- Header -->
+        <div class="flex justify-between items-center px-2">
+            <div class="w-8"></div>
+            <div class="text-center">
+                <h1 class="text-3xl font-semibold text-slate-800 tracking-tight">Focus Time</h1>
+                <p id="date-display" class="text-slate-400 text-sm mt-1"></p>
+            </div>
+            <!-- Sound Toggle -->
+            <div class="flex flex-col items-center gap-1">
+                <button onclick="toggleMute()" id="mute-btn" class="w-10 h-10 rounded-full bg-slate-50 flex items-center justify-center text-slate-400 active:scale-95 transition-all">
+                    <i id="sound-icon" class="fas fa-volume-up"></i>
+                </button>
+                <span id="mute-status-text" class="text-[8px] font-bold uppercase tracking-wider text-slate-400">Sound ON</span>
             </div>
         </div>
-    </section>
 
-    <!-- フッター -->
-    <footer class="bg-gray-800 text-white py-6">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-            <p class="text-sm">
-                &copy; 2024 onj2000. All Rights Reserved.
-            </p>
+        <!-- Mode Selector -->
+        <div class="flex bg-slate-100 p-1.5 rounded-2xl">
+            <button onclick="setMode('stopwatch')" id="btn-stopwatch" class="flex-1 py-3 text-sm font-semibold rounded-xl transition-all active-mode">
+                ストップウォッチ
+            </button>
+            <button onclick="setMode('timer')" id="btn-timer" class="flex-1 py-3 text-sm font-semibold rounded-xl transition-all text-slate-500">
+                タイマー
+            </button>
         </div>
-    </footer>
 
+        <!-- Main Display -->
+        <div class="bg-white mobile-card rounded-[3rem] p-10 text-center border border-slate-50 relative overflow-hidden">
+            <div id="status-label" class="text-[10px] font-bold text-indigo-400 uppercase tracking-[0.3em] mb-4">Ready to study</div>
+            <div id="display" class="timer-font text-6xl font-medium text-slate-800 leading-none">00:00:00</div>
+            
+            <div id="timer-input-area" class="mt-6 hidden">
+                <div class="flex items-center justify-center gap-2">
+                    <input type="number" id="target-minutes" value="25" min="1" max="999"
+                        class="w-20 text-center text-2xl font-bold bg-slate-50 rounded-lg py-2 border-none outline-none focus:ring-2 focus:ring-indigo-200">
+                    <span class="text-slate-400 font-bold">MIN</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Input Forms -->
+        <div class="space-y-3">
+            <div class="relative">
+                <i class="fas fa-book absolute left-4 top-1/2 -translate-y-1/2 text-slate-300 text-sm"></i>
+                <input type="text" id="subject" placeholder="教科を入力" 
+                    class="w-full pl-11 pr-4 py-4 rounded-2xl bg-white border border-slate-100 shadow-sm outline-none focus:border-indigo-300 transition-all">
+            </div>
+            <div class="relative">
+                <i class="fas fa-pen absolute left-4 top-1/2 -translate-y-1/2 text-slate-300 text-sm"></i>
+                <input type="text" id="memo" placeholder="今日の一言メモ" 
+                    class="w-full pl-11 pr-4 py-4 rounded-2xl bg-white border border-slate-100 shadow-sm outline-none focus:border-indigo-300 transition-all">
+            </div>
+        </div>
+    </div>
+
+    <!-- Controls -->
+    <div class="w-full max-w-sm grid grid-cols-4 gap-4 mt-8">
+        <button id="main-btn" onclick="toggleTimer()" 
+            class="col-span-3 bg-indigo-600 active:bg-indigo-800 text-white font-bold py-5 rounded-[2rem] shadow-xl shadow-indigo-100 flex items-center justify-center gap-3 transition-all">
+            <i id="main-icon" class="fas fa-play"></i>
+            <span id="main-text">Start</span>
+        </button>
+        <button onclick="resetTimer()" 
+            class="col-span-1 bg-white border border-slate-100 text-slate-400 py-5 rounded-[2rem] active:bg-slate-50 flex items-center justify-center transition-all">
+            <i class="fas fa-redo-alt"></i>
+        </button>
+    </div>
+
+    <!-- Settings Trigger -->
+    <div class="w-full max-w-sm mt-6 flex justify-center">
+        <button onclick="toggleSettings()" class="text-slate-300 text-xs hover:text-slate-500">
+            <i class="fas fa-cog"></i> App Settings
+        </button>
+    </div>
+
+    <!-- Settings Modal -->
+    <div id="settings-modal" class="fixed inset-0 bg-black/50 backdrop-blur-sm hidden flex items-center justify-center p-6 z-50">
+        <div class="bg-white w-full max-w-sm rounded-[2rem] p-8 space-y-6">
+            <div class="flex justify-between items-center">
+                <h3 class="font-bold text-xl text-slate-800">Settings</h3>
+                <span class="text-[10px] text-slate-400">Ver 1.6</span>
+            </div>
+            
+            <div class="space-y-4">
+                <div>
+                    <label class="text-xs font-bold text-slate-400 uppercase mb-2 block">Alarm Volume</label>
+                    <div class="flex items-center gap-4">
+                        <input type="range" id="volume-control" min="0" max="1" step="0.1" value="0.5" class="flex-1 accent-indigo-600">
+                        <span id="volume-value" class="text-xs text-slate-400 w-8">50%</span>
+                    </div>
+                </div>
+
+                <div>
+                    <label class="text-xs font-bold text-slate-400 uppercase mb-2 block">Spreadsheet URL (GAS)</label>
+                    <input type="text" id="gas-url" placeholder="https://script.google.com/..." 
+                        class="w-full p-4 bg-slate-50 rounded-xl border-none outline-none focus:ring-2 focus:ring-indigo-200 text-sm">
+                    <p class="text-[10px] text-slate-400 mt-1">※ GASで「全員」にデプロイしたURLを入力</p>
+                </div>
+
+                <div class="pt-2">
+                    <button onclick="playTestSound()" class="w-full py-2 text-indigo-600 font-bold bg-indigo-50 rounded-lg text-sm">
+                        <i class="fas fa-play mr-2"></i>Test Sound
+                    </button>
+                </div>
+            </div>
+
+            <button onclick="toggleSettings()" class="w-full bg-slate-800 text-white py-4 rounded-xl font-bold">Close</button>
+        </div>
+    </div>
+
+    <!-- Toast Notification -->
+    <div id="toast" class="fixed top-12 left-1/2 -translate-x-1/2 bg-slate-900/90 text-white px-8 py-4 rounded-2xl text-sm font-medium opacity-0 transition-all pointer-events-none z-[100] text-center min-w-[200px]">
+        Saved Successfully
+    </div>
+
+    <script>
+        let mode = 'stopwatch';
+        let isRunning = false;
+        let timerId = null;
+        let totalSeconds = 0;
+        let initialTimerSeconds = 0; // タイマー開始時の設定時間を保持
+        let isMuted = false;
+
+        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        let volume = 0.5;
+
+        // Display current date
+        const options = { month: 'short', day: 'numeric', weekday: 'short' };
+        document.getElementById('date-display').innerText = new Date().toLocaleDateString('ja-JP', options);
+
+        // Initialization
+        window.onload = () => {
+            const savedUrl = localStorage.getItem('gas_url');
+            if (savedUrl) document.getElementById('gas-url').value = savedUrl;
+            
+            const savedVol = localStorage.getItem('timer_volume');
+            if (savedVol !== null) {
+                volume = parseFloat(savedVol);
+                document.getElementById('volume-control').value = volume;
+                document.getElementById('volume-value').innerText = Math.round(volume * 100) + '%';
+            }
+
+            const savedMute = localStorage.getItem('is_muted');
+            if (savedMute === 'true') {
+                isMuted = true;
+                updateMuteUI();
+            }
+        };
+
+        function toggleMute() {
+            isMuted = !isMuted;
+            localStorage.setItem('is_muted', isMuted);
+            updateMuteUI();
+        }
+
+        function updateMuteUI() {
+            const icon = document.getElementById('sound-icon');
+            const btn = document.getElementById('mute-btn');
+            const statusText = document.getElementById('mute-status-text');
+            
+            if (isMuted) {
+                icon.className = 'fas fa-volume-mute';
+                btn.classList.add('mute-active');
+                statusText.innerText = 'Sound OFF';
+                statusText.classList.replace('text-slate-400', 'text-red-400');
+            } else {
+                icon.className = 'fas fa-volume-up';
+                btn.classList.remove('mute-active');
+                statusText.innerText = 'Sound ON';
+                statusText.classList.replace('text-red-400', 'text-slate-400');
+            }
+        }
+
+        function playAlarm() {
+            if (isMuted) return; 
+
+            const icon = document.getElementById('sound-icon');
+            icon.classList.add('is-ringing');
+            
+            const playNote = (delay) => {
+                const osc = audioCtx.createOscillator();
+                const gain = audioCtx.createGain();
+                osc.type = 'sine';
+                osc.frequency.setValueAtTime(880, audioCtx.currentTime + delay);
+                gain.gain.setValueAtTime(volume, audioCtx.currentTime + delay);
+                gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + delay + 0.4);
+                osc.connect(gain);
+                gain.connect(audioCtx.destination);
+                osc.start(audioCtx.currentTime + delay);
+                osc.stop(audioCtx.currentTime + delay + 0.5);
+            };
+
+            playNote(0);
+            playNote(0.6);
+
+            setTimeout(() => {
+                icon.classList.remove('is-ringing');
+            }, 1200);
+        }
+
+        function playTestSound() {
+            if (audioCtx.state === 'suspended') audioCtx.resume();
+            if (isMuted) {
+                showToast('Mute is active.');
+            } else {
+                playAlarm();
+            }
+        }
+
+        document.getElementById('volume-control').addEventListener('input', (e) => {
+            volume = parseFloat(e.target.value);
+            document.getElementById('volume-value').innerText = Math.round(volume * 100) + '%';
+            localStorage.setItem('timer_volume', volume);
+        });
+
+        function setMode(newMode) {
+            if (isRunning) return;
+            mode = newMode;
+            
+            document.getElementById('btn-stopwatch').classList.toggle('active-mode', mode === 'stopwatch');
+            document.getElementById('btn-stopwatch').classList.toggle('text-slate-500', mode !== 'stopwatch');
+            document.getElementById('btn-timer').classList.toggle('active-mode', mode === 'timer');
+            document.getElementById('btn-timer').classList.toggle('text-slate-500', mode !== 'timer');
+            document.getElementById('timer-input-area').classList.toggle('hidden', mode === 'stopwatch');
+            
+            if (mode === 'timer') {
+                updateTimerFromInput();
+            } else {
+                totalSeconds = 0;
+            }
+            updateDisplay();
+        }
+
+        function updateTimerFromInput() {
+            const mins = document.getElementById('target-minutes').value;
+            totalSeconds = (parseInt(mins) || 0) * 60;
+            initialTimerSeconds = totalSeconds; // 設定値を記憶
+            updateDisplay();
+        }
+
+        function formatTime(secs) {
+            const h = Math.floor(secs / 3600);
+            const m = Math.floor((secs % 3600) / 60);
+            const s = secs % 60;
+            return [h, m, s].map(v => v.toString().padStart(2, '0')).join(':');
+        }
+
+        function updateDisplay() {
+            document.getElementById('display').innerText = formatTime(totalSeconds);
+        }
+
+        function toggleTimer() {
+            if (audioCtx.state === 'suspended') audioCtx.resume();
+            if (isRunning) stopTimer();
+            else startTimer();
+        }
+
+        function startTimer() {
+            // ストップウォッチモードの場合、開始の瞬間にリセットする
+            if (mode === 'stopwatch') {
+                totalSeconds = 0;
+                updateDisplay();
+            } else if (mode === 'timer') {
+                // タイマーモードの場合も入力値に基づいてリセットしてから開始
+                updateTimerFromInput();
+            }
+            
+            isRunning = true;
+            document.getElementById('main-text').innerText = 'Finish';
+            document.getElementById('main-icon').className = 'fas fa-check';
+            document.getElementById('main-btn').classList.replace('bg-indigo-600', 'bg-emerald-500');
+            document.getElementById('status-label').innerText = 'Focusing now...';
+            document.getElementById('status-label').classList.add('text-emerald-500');
+
+            timerId = setInterval(() => {
+                if (mode === 'stopwatch') {
+                    totalSeconds++;
+                } else {
+                    totalSeconds--;
+                    if (totalSeconds <= 0) {
+                        totalSeconds = 0;
+                        updateDisplay();
+                        playAlarm();
+                        stopTimer();
+                    }
+                }
+                updateDisplay();
+            }, 1000);
+        }
+
+        async function stopTimer() {
+            clearInterval(timerId);
+            isRunning = false;
+            
+            // 実際に勉強した時間を計算
+            let actualStudySeconds = 0;
+            if (mode === 'stopwatch') {
+                actualStudySeconds = totalSeconds;
+            } else {
+                // タイマーの場合：設定時間 - 残り時間
+                actualStudySeconds = initialTimerSeconds - totalSeconds;
+            }
+            
+            const formattedTimeToSave = formatTime(actualStudySeconds);
+            
+            document.getElementById('main-text').innerText = 'Start';
+            document.getElementById('main-icon').className = 'fas fa-play';
+            document.getElementById('main-btn').classList.replace('bg-emerald-500', 'bg-indigo-600');
+            document.getElementById('status-label').innerText = 'Session paused';
+            document.getElementById('status-label').classList.remove('text-emerald-500');
+
+            // 画面には「今回の結果」を表示したままにする（次のスタートでリセットされる）
+
+            await saveData(actualStudySeconds, formattedTimeToSave);
+        }
+
+        function resetTimer() {
+            if (isRunning) return;
+            if (mode === 'stopwatch') totalSeconds = 0;
+            else updateTimerFromInput();
+            updateDisplay();
+        }
+
+        async function saveData(secs, formatted) {
+            let url = document.getElementById('gas-url').value.trim();
+            if (url) {
+                localStorage.setItem('gas_url', url);
+            } else {
+                url = localStorage.getItem('gas_url');
+            }
+
+            if (!url) {
+                showToast('URLを設定してください');
+                return;
+            }
+
+            const data = {
+                subject: document.getElementById('subject').value || '未設定',
+                memo: document.getElementById('memo').value || '-',
+                seconds: secs,
+                formattedTime: formatted
+            };
+
+            try {
+                showToast('Cloudに保存中...');
+                await fetch(url, {
+                    method: 'POST',
+                    mode: 'no-cors',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(data)
+                });
+                showToast('実質時間を保存完了！');
+            } catch (e) {
+                console.error('Fetch Error:', e);
+                showToast('保存エラーが発生しました');
+            }
+        }
+
+        function showToast(msg) {
+            const t = document.getElementById('toast');
+            t.innerText = msg;
+            t.style.opacity = '1';
+            setTimeout(() => t.style.opacity = '0', 3000);
+        }
+
+        function toggleSettings() {
+            const modal = document.getElementById('settings-modal');
+            modal.classList.toggle('hidden');
+        }
+
+        document.getElementById('target-minutes').addEventListener('input', () => {
+            if (!isRunning && mode === 'timer') updateTimerFromInput();
+        });
+    </script>
 </body>
 </html>
